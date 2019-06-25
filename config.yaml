@@ -1,14 +1,14 @@
 default:
     command:
         history:
-            filename: ../../cmdhist.pcap
+            filename: cmdhist.pcap
         port: 3075
 
     sequence:
-        directory: ../../seq/
+        directory: seq
 
     script:
-        directory: ../../script
+        directory: script
 
     cmddict:
         filename:  cmd.yaml
@@ -21,7 +21,7 @@ default:
 
     limits:
         filename:  limits.yaml
-      
+
     table:
         filename: table.yaml
 
@@ -40,13 +40,13 @@ default:
                 path: ./mib
             datasink:
                 outgoing:
-                    path: ../ait/dsn/cfdp/datasink/outgoing
+                    path: dsn/cfdp/datasink/outgoing
                 incoming:
-                    path: ../ait/dsn/cfdp/datasink/incoming
+                    path: dsn/cfdp/datasink/incoming
                 tempfiles:
-                    path: ../ait/dsn/cfdp/datasink/tempfiles
+                    path: dsn/cfdp/datasink/tempfiles
                 pdusink:
-                    path: ../ait/dsn/cfdp/datasink/pdusink
+                    path: dsn/cfdp/datasink/pdusink
             max_file_name_length: 64
             max_entity_id_length: 8
             max_transaction_id_length: 8
@@ -110,19 +110,19 @@ default:
             path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/uplink
         ats:
             path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/ats
-            
+
     server:
         plugins:
 
         inbound-streams:
             - stream:
                 name: log_stream
-                input: 
+                input:
                     - 2514
 
             - stream:
                 name: telem_stream
-                input: 
+                input:
                     - 3076
                 handlers:
                     - name: ait.core.server.handler.PacketHandler
