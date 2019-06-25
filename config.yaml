@@ -51,9 +51,9 @@ default:
 #            max_entity_id_length: 8
 #            max_transaction_id_length: 8
 
-    logging:
-        name: ait
-        hostname: yourCustomHostForLogging
+#    logging:
+#        name: ait
+#        hostname: yourCustomHostForLogging
 
     leapseconds:
         filename: leapseconds.dat
@@ -111,70 +111,56 @@ default:
 #        ats:
 #            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/ats
 
-    server:
-        plugins:
-
-        inbound-streams:
-            - stream:
-                name: log_stream
-                input:
-                    - 2514
-
-            - stream:
-                name: telem_stream
-                input:
-                    - 3076
-                handlers:
-                    - name: ait.core.server.handler.PacketHandler
-                      packet: 1553_HS_Packet
-
-        outbound-streams:
-            - stream:
-                name: command_stream
-                output: 3075
-
 server:
-    plugins:
-        - plugin:
-            name: ait.server.plugins.ait_gui_plugin.AITGUIPlugin
-            inputs:
-                - log_stream
-                - telem_testbed_stream
-            outputs:
-                - command_testbed_stream
+#    plugins:
+#        - plugin:
+#            name: ait.server.plugins.ait_gui_plugin.AITGUIPlugin
+#            inputs:
+#                - log_stream
+#                - telem_testbed_stream
+#            outputs:
+#                - command_testbed_stream
 
     inbound-streams:
-        - stream:
-            name: log_stream
-            input: 3077
+#        - stream:
+#            name: log_stream
+#            input: 3077
 
-        - stream:
-            name: telem_port_in_stream
-            input: 3076
-            handlers:
-                - my_custom_handlers.TestbedTelemHandler
+#        - stream:
+#            name: telem_port_in_stream
+#            input: 3076
+#            handlers:
+#                - my_custom_handlers.TestbedTelemHandler
 
-        - stream:
-            name: telem_testbed_stream
-            input: telem_port_in_stream
-            handlers:
-                - name: ait.server.handler.PacketHandler
-                  packet: 1553_HS_Packet
+#        - stream:
+#            name: telem_testbed_stream
+#            input: telem_port_in_stream
+#            handlers:
+#                - name: ait.server.handler.PacketHandler
+#                  packet: 1553_HS_Packet
+
+         - stream:
+             name: command_fwd_output
+             input: 3075
 
     outbound-streams:
-        - stream:
-            name: command_testbed_stream
-            handlers:
-                - name: my_custom_handlers.TestbedCommandHandler
+#        - stream:
+#            name: command_testbed_stream
+#            handlers:
+#                - name: my_custom_handlers.TestbedCommandHandler
 
-        - stream:
-            name: command_flightlike_stream
-            handlers:
-                - name: my_custom_handlers.FlightlikeCommandHandler
+#        - stream:
+#            name: command_flightlike_stream
+#            handlers:
+#                - name: my_custom_handlers.FlightlikeCommandHandler
 
-        - stream:
-            name: command_port_out_stream
-            input:
-                - command_testbed_stream
-                - command_flightlike_stream
-            output: 3075
+#        - stream:
+#            name: command_port_out_stream
+#            input:
+#                - command_testbed_stream
+#                - command_flightlike_stream
+#            output: 3075
+
+         - stream:
+             name: cmd_fwd_output
+             output: 3076
