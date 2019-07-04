@@ -2,6 +2,9 @@ from socket import *
 import struct
 
 class DemoServer:
+    ''' Simulates downlink telemetry by periodically sending an unsigned \
+32-bit integer to a specified address and port.  The integer can be changed by \
+sending this server the SET_UINT command from AIT.'''
 
     # Defaults
     defaultTlmAddr = 'localhost'
@@ -32,7 +35,7 @@ class DemoServer:
                  tlmPort = defaultTlmPort,
                  cmdPort = defaultCmdPort,
                  rateHz  = defaultRateHz):
-
+        ''' Readies the telemetry and command sockets for operation. '''
 
         # Save off the basic stuff
         self.tlmAddr = tlmAddr
@@ -47,10 +50,29 @@ class DemoServer:
         self.cmdSocket.setblocking(0)
         self.tlmSocket.setblocking(0)
 
-        # This starts the cmdSocket listening
+        # This starts the cmdSocket listening on all available interfaces
         self.cmdSocket.bind(('', self.cmdPort))
 
-    def sendTlm(self):
+    def readCmds(self):
+        ''' Reads in all available commands and buffers them internally. '''
+        pass
 
+    def executeCmds(self):
+        ''' Executes all buffered commands. '''
+        pass
+
+    def sendTlm(self):
+        ''' Sends a single telemetry message. '''
+        # Assume the whole telemetry message goes out here
         self.cmdSocket.sendto(struct.pack('I', self.tlmData),
                               (self.tlmAddr, self.tlmPort))
+
+    def frame(self):
+        ''' Implements a single frame of server operation.  Reads in all \
+commands, executes those commands, and then sends a single frame of \
+telemetry. '''
+
+    def run(self):
+        ''' Implements the main server loop.  Does not return.  Executes one \
+frame of operation at the specified rate. '''
+        pass
