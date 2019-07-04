@@ -27,6 +27,9 @@ sending this server the SET_UINT command from AIT.'''
     # integer but there doesn't seem to be any way of enforcing this with python
     tlmData = 9876
 
+    # Commands are buffered here as they are read off the socket
+    cmdBuffer = ''
+
     # Server operates at this rate (Hz)
     rateHz = defaultRateHz
 
@@ -55,14 +58,27 @@ sending this server the SET_UINT command from AIT.'''
 
     def readCmds(self):
         ''' Reads in all available commands and buffers them internally. '''
-        pass
+        mightBeData = True
+        while(mightBeData):
+
+            # Try to read some data
+            try:
+                cmdData = self.cmdSocket.recv(4096)
+            except:
+                print 'No data?'
+                mightBeData = False
+            else:
+                # Add the new data to the buffer
+                self.cmdBuffer += cmdData
+                print 'Read ' + str(len(cmdData)) + ' bytes'
 
     def executeCmds(self):
-        ''' Executes all buffered commands. '''
+        ''' Executes all buffered commands in order of reception. '''
         pass
 
     def sendTlm(self):
-        ''' Sends a single telemetry message. '''
+        ''' Sends a single telemetry message containing the latest received \
+command data. '''
         # Assume the whole telemetry message goes out here
         self.cmdSocket.sendto(struct.pack('I', self.tlmData),
                               (self.tlmAddr, self.tlmPort))
