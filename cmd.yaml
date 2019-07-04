@@ -6,16 +6,16 @@
   desc:      Standard NO_OP command.
 
 - !Command
-  name:      INCREMENT_ME
+  name:      SET_UINT
   opcode:    0x002
   subsystem: CMD
-  title:     Number Increment
-  desc:      A number to be incremented and returned
+  title:     Set Unsigned Integer
+  desc:      Sets the unsigned integer (uint) stored in the demo server
 
   arguments:
     - !Argument
-      name:  num
-      desc:  Non-negative integer
+      name:  uint
+      desc:  Unsigned integer (uint) to be stored by the server
       units: none
       type:  MSB_U32
       bytes: [0,3]
