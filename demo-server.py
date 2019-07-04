@@ -4,16 +4,17 @@ import struct
 class DemoServer:
 
     # Defaults
-    defaultPort    = 2345
-    defaultRateHz  = 1
     defaultTlmAddr = 'localhost'
+    defaultTlmPort = 2345
+    defaultCmdPort = 2346
+    defaultRateHz  = 1
 
     # For incoming data
-    cmdPort   = defaultPort
+    cmdPort   = defaultCmdPort
     cmdSocket = socket(AF_INET, SOCK_DGRAM)
 
     # For outgoing data
-    tlmPort   = defaultPort
+    tlmPort   = defaultTlmPort
     tlmSocket = socket(AF_INET, SOCK_DGRAM)
 
     # Telemetry (tlmData) is sent to this address every frame
@@ -28,8 +29,8 @@ class DemoServer:
 
     def __init__(self,
                  tlmAddr = defaultTlmAddr,
-                 tlmPort = defaultPort,
-                 cmdPort = defaultPort,
+                 tlmPort = defaultTlmPort,
+                 cmdPort = defaultCmdPort,
                  rateHz  = defaultRateHz):
 
 
