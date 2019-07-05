@@ -1,5 +1,7 @@
-from socket import *
+import datetime
+import socket
 import struct
+import time
 
 class DemoServer:
     ''' Simulates downlink telemetry by periodically sending an unsigned \
@@ -14,11 +16,11 @@ sending this server the SET_UINT command from AIT.'''
 
     # For incoming data
     cmdPort   = defaultCmdPort
-    cmdSocket = socket(AF_INET, SOCK_DGRAM)
+    cmdSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     # For outgoing data
     tlmPort   = defaultTlmPort
-    tlmSocket = socket(AF_INET, SOCK_DGRAM)
+    tlmSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     # Telemetry (tlmData) is sent to this address every frame
     tlmAddr = defaultTlmAddr
@@ -30,8 +32,8 @@ sending this server the SET_UINT command from AIT.'''
     # Commands are buffered here as they are read off the socket
     cmdBuffer = ''
 
-    # Server operates at this rate (Hz)
-    rateHz = defaultRateHz
+    # Frames are this long
+    frameDuration = datetime.timedelta(0, 1.0 / defaultRateHz)
 
     def __init__(self,
                  tlmAddr = defaultTlmAddr,
@@ -41,10 +43,10 @@ sending this server the SET_UINT command from AIT.'''
         ''' Readies the telemetry and command sockets for operation. '''
 
         # Save off the basic stuff
-        self.tlmAddr = tlmAddr
-        self.tlmPort = tlmPort
-        self.cmdPort = cmdPort
-        self.rateHz  = rateHz
+        self.tlmAddr       = tlmAddr
+        self.tlmPort       = tlmPort
+        self.cmdPort       = cmdPort
+        self.frameDuration = datetime.timedelta(0, 1.0 / rateHz)
 
         # We know enough to initialize the sockets now
 
@@ -58,14 +60,14 @@ sending this server the SET_UINT command from AIT.'''
 
     def readCmds(self):
         ''' Reads in all available commands and buffers them internally. '''
+
         mightBeData = True
         while(mightBeData):
 
             # Try to read some data
             try:
                 cmdData = self.cmdSocket.recv(4096)
-            except:
-                print 'No data?'
+            except socket.error:
                 mightBeData = False
             else:
                 # Add the new data to the buffer
@@ -74,11 +76,17 @@ sending this server the SET_UINT command from AIT.'''
 
     def executeCmds(self):
         ''' Executes all buffered commands in order of reception. '''
-        pass
+
+        # Can't do anything unless we have a full AIT command's worth of data
+        while(len(self.cmdBuffer) >= 106):
+            # Grab the data we care about, ignore the rest
+            self.tlmData = struct.unpack('>3xI', self.cmdBuffer[:7])[0]
+            self.cmdBuffer = self.cmdBuffer[106:]
 
     def sendTlm(self):
         ''' Sends a single telemetry message containing the latest received \
 command data. '''
+
         # Assume the whole telemetry message goes out here
         self.cmdSocket.sendto(struct.pack('I', self.tlmData),
                               (self.tlmAddr, self.tlmPort))
@@ -88,7 +96,25 @@ command data. '''
 commands, executes those commands, and then sends a single frame of \
 telemetry. '''
 
+        self.readCmds()
+        self.executeCmds()
+        self.sendTlm()
+
     def run(self):
         ''' Implements the main server loop.  Does not return.  Executes one \
 frame of operation at the specified rate. '''
-        pass
+
+        while(True):
+
+            print 'Frame start'
+            frameStart = datetime.datetime.now()
+
+            # Execute a frame
+            self.frame()
+
+            # How long did the frame take?
+            frameTime = datetime.datetime.now() - frameStart
+
+            # Sleep off the rest of the frame
+            if (frameTime < self.frameDuration):
+                time.sleep((self.frameDuration - frameTime).total_seconds())
