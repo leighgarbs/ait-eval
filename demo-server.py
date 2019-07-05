@@ -15,7 +15,8 @@ defaultRateHz  = 1
 class DemoServer:
     ''' Simulates downlink telemetry by periodically sending an unsigned \
 32-bit integer to a specified address and port.  The integer can be changed by \
-sending this server the SET_UINT command from AIT.'''
+sending this server the SET_UINT command from AIT.  Both commands and telemetry \
+use UDP. '''
 
     # For incoming data
     cmdPort   = defaultCmdPort
@@ -91,7 +92,7 @@ sending this server the SET_UINT command from AIT.'''
 command data. '''
 
         # Assume the whole telemetry message goes out here
-        self.cmdSocket.sendto(struct.pack('I', self.tlmData),
+        self.cmdSocket.sendto(struct.pack('>I', self.tlmData),
                               (self.tlmAddr, self.tlmPort))
 
     def frame(self):
@@ -152,4 +153,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    DemoServer().run()
+    DemoServer(args.tlm_address,
+               args.tlm_port,
+               args.cmd_port,
+               args.rate_hz).run()
