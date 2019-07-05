@@ -112,16 +112,20 @@ default:
 #            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/ats
 
 server:
-#    plugins:
-#        - plugin:
-#            name: ait.server.plugins.ait_gui_plugin.AITGUIPlugin
-#            inputs:
-#                - log_stream
-#                - telem_testbed_stream
+    plugins:
+        - plugin:
+            name: ait.gui.AITGUIPlugin
+            inputs:
+                - TLM
 #            outputs:
 #                - command_testbed_stream
 
     inbound-streams:
+
+      - stream:
+          name:  TLM
+          input: 2345
+
 #        - stream:
 #            name: log_stream
 #            input: 3077
@@ -138,10 +142,6 @@ server:
 #            handlers:
 #                - name: ait.server.handler.PacketHandler
 #                  packet: 1553_HS_Packet
-
-         - stream:
-             name: command_fwd_output
-             input: 3075
 
     outbound-streams:
 #        - stream:
