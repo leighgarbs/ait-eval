@@ -72,7 +72,6 @@ sending this server the SET_UINT command from AIT.'''
             else:
                 # Add the new data to the buffer
                 self.cmdBuffer += cmdData
-                print 'Read ' + str(len(cmdData)) + ' bytes'
 
     def executeCmds(self):
         ''' Executes all buffered commands in order of reception. '''
@@ -82,6 +81,7 @@ sending this server the SET_UINT command from AIT.'''
             # Grab the data we care about, ignore the rest
             self.tlmData = struct.unpack('>3xI', self.cmdBuffer[:7])[0]
             self.cmdBuffer = self.cmdBuffer[106:]
+            print self.tlmData
 
     def sendTlm(self):
         ''' Sends a single telemetry message containing the latest received \
@@ -106,7 +106,6 @@ frame of operation at the specified rate. '''
 
         while(True):
 
-            print 'Frame start'
             frameStart = datetime.datetime.now()
 
             # Execute a frame
