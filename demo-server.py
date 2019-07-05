@@ -1,20 +1,21 @@
 #!/usr/bin/env python
 
+import argparse
 import datetime
 import socket
 import struct
 import time
 
+# Defaults
+defaultTlmAddr = 'localhost'
+defaultTlmPort = 2345
+defaultCmdPort = 2346
+defaultRateHz  = 1
+
 class DemoServer:
     ''' Simulates downlink telemetry by periodically sending an unsigned \
 32-bit integer to a specified address and port.  The integer can be changed by \
 sending this server the SET_UINT command from AIT.'''
-
-    # Defaults
-    defaultTlmAddr = 'localhost'
-    defaultTlmPort = 2345
-    defaultCmdPort = 2346
-    defaultRateHz  = 1
 
     # For incoming data
     cmdPort   = defaultCmdPort
@@ -124,5 +125,31 @@ frame of operation at the specified rate. '''
 
 # This will get executed when this file is run as a script
 if __name__ == '__main__':
+
+    description = \
+    'Simulates downlink telemetry by periodically sending an unsigned 32-bit ' \
+    'integer to a specified address and port.  The integer can be changed by ' \
+    'sending this server the SET_UINT command from AIT.  Both commands and ' \
+    'telemetry use UDP.'
+
+    parser = argparse.ArgumentParser(description)
+
+    parser.add_argument('--tlm-address',
+                        default = defaultTlmAddr,
+                        help = 'IPv4 address to which telemetry will be sent')
+    parser.add_argument('--tlm-port',
+                        type = int,
+                        default = defaultTlmPort,
+                        help = 'Port to which telemetry will be sent')
+    parser.add_argument('--cmd-port',
+                        type = int,
+                        default = defaultCmdPort,
+                        help = 'Port on which commands are received')
+    parser.add_argument('--rate-hz',
+                        type = float,
+                        default = defaultRateHz,
+                        help = 'Rate (Hz) of server updates')
+
+    args = parser.parse_args()
 
     DemoServer().run()
