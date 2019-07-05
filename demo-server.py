@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import datetime
 import socket
 import struct
@@ -117,3 +119,10 @@ frame of operation at the specified rate. '''
             # Sleep off the rest of the frame
             if (frameTime < self.frameDuration):
                 time.sleep((self.frameDuration - frameTime).total_seconds())
+
+# End of the DemoServer class definition
+
+# This will get executed when this file is run as a script
+if __name__ == '__main__':
+
+    DemoServer().run()
