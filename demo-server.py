@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# Written for Python 2.7.10
 
 import argparse
 import datetime
@@ -7,16 +8,17 @@ import struct
 import time
 
 # Defaults
-defaultTlmAddr = 'localhost'
-defaultTlmPort = 2345
-defaultCmdPort = 2346
-defaultRateHz  = 1
+defaultTlmAddr   = 'localhost'
+defaultTlmPort   = 2345
+defaultCmdPort   = 2346
+defaultRateHz    = 1
+defaultVerbosity = 0
 
 class DemoServer:
     ''' Simulates downlink telemetry by periodically sending an unsigned \
 32-bit integer to a specified address and port.  The integer can be changed by \
-sending this server the SET_UINT command from AIT.  Both commands and telemetry \
-use UDP. '''
+sending this server the SET_UINT command from AIT.  Both commands and \
+telemetry use UDP. '''
 
     # For incoming data
     cmdPort   = defaultCmdPort
@@ -39,11 +41,15 @@ use UDP. '''
     # Frames are this long
     frameDuration = datetime.timedelta(0, 1.0 / defaultRateHz)
 
+    # How chatty should the server be during operation
+    verbosity = defaultVerbosity
+
     def __init__(self,
-                 tlmAddr = defaultTlmAddr,
-                 tlmPort = defaultTlmPort,
-                 cmdPort = defaultCmdPort,
-                 rateHz  = defaultRateHz):
+                 tlmAddr   = defaultTlmAddr,
+                 tlmPort   = defaultTlmPort,
+                 cmdPort   = defaultCmdPort,
+                 rateHz    = defaultRateHz,
+                 verbosity = defaultVerbosity):
         ''' Readies the telemetry and command sockets for operation. '''
 
         # Save off the basic stuff
@@ -51,6 +57,7 @@ use UDP. '''
         self.tlmPort       = tlmPort
         self.cmdPort       = cmdPort
         self.frameDuration = datetime.timedelta(0, 1.0 / rateHz)
+        self.verbosity     = verbosity
 
         # We know enough to initialize the sockets now
 
@@ -65,6 +72,9 @@ use UDP. '''
     def readCmds(self):
         ''' Reads in all available commands and buffers them internally. '''
 
+        if (self.verbosity > 1):
+            print 'Reading commands'
+
         mightBeData = True
         while(mightBeData):
 
@@ -77,19 +87,30 @@ use UDP. '''
                 # Add the new data to the buffer
                 self.cmdBuffer += cmdData
 
+                if (self.verbosity > 0):
+                    print 'Read ' + str(len(cmdData)) + ' bytes'
+
     def executeCmds(self):
         ''' Executes all buffered commands in order of reception. '''
+
+        if (self.verbosity > 1):
+            print 'Executing commands'
 
         # Can't do anything unless we have a full AIT command's worth of data
         while(len(self.cmdBuffer) >= 106):
             # Grab the data we care about, ignore the rest
             self.tlmData = struct.unpack('>3xI', self.cmdBuffer[:7])[0]
             self.cmdBuffer = self.cmdBuffer[106:]
-            print self.tlmData
+
+            if (self.verbosity > 0):
+                print self.tlmData
 
     def sendTlm(self):
         ''' Sends a single telemetry message containing the latest received \
 command data. '''
+
+        if (self.verbosity > 1):
+            print 'Sending telemetry'
 
         # Assume the whole telemetry message goes out here
         self.cmdSocket.sendto(struct.pack('>I', self.tlmData),
@@ -110,6 +131,9 @@ frame of operation at the specified rate. '''
 
         while(True):
 
+            if (self.verbosity > 1):
+                print 'Starting frame'
+
             frameStart = datetime.datetime.now()
 
             # Execute a frame
@@ -117,6 +141,9 @@ frame of operation at the specified rate. '''
 
             # How long did the frame take?
             frameTime = datetime.datetime.now() - frameStart
+
+            if (self.verbosity > 1):
+                print 'Ending frame'
 
             # Sleep off the rest of the frame
             if (frameTime < self.frameDuration):
@@ -127,21 +154,12 @@ frame of operation at the specified rate. '''
 # This will get executed when this file is run as a script
 if __name__ == '__main__':
 
-    description = \
-    'Simulates downlink telemetry by periodically sending an unsigned 32-bit ' \
-    'integer to a specified address and port.  The integer can be changed by ' \
-    'sending this server the SET_UINT command from AIT.  Both commands and ' \
-    'telemetry use UDP.'
+    parser = argparse.ArgumentParser(
+        'Simulates downlink telemetry by periodically sending an unsigned ' \
+        '32-bit integer to a specified address and port.  The integer can be ' \
+        'changed by sending this server the SET_UINT command from AIT.  Both ' \
+        'commands and telemetry use UDP.')
 
-    parser = argparse.ArgumentParser(description)
-
-    parser.add_argument('--tlm-address',
-                        default = defaultTlmAddr,
-                        help = 'IPv4 address to which telemetry will be sent')
-    parser.add_argument('--tlm-port',
-                        type = int,
-                        default = defaultTlmPort,
-                        help = 'Port to which telemetry will be sent')
     parser.add_argument('--cmd-port',
                         type = int,
                         default = defaultCmdPort,
@@ -150,10 +168,22 @@ if __name__ == '__main__':
                         type = float,
                         default = defaultRateHz,
                         help = 'Rate (Hz) of server updates')
+    parser.add_argument('--tlm-address',
+                        default = defaultTlmAddr,
+                        help = 'IPv4 address to which telemetry will be sent')
+    parser.add_argument('--tlm-port',
+                        type = int,
+                        default = defaultTlmPort,
+                        help = 'Port to which telemetry will be sent')
+    parser.add_argument('-v', '--verbose',
+                        action = 'count',
+                        default = defaultVerbosity,
+                        help = 'Enables verbose output')
 
     args = parser.parse_args()
 
     DemoServer(args.tlm_address,
                args.tlm_port,
                args.cmd_port,
-               args.rate_hz).run()
+               args.rate_hz,
+               args.verbose).run()
