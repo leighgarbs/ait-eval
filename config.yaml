@@ -111,14 +111,14 @@ default:
 #        ats:
 #            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/ats
 
-server:
-    plugins:
-        - plugin:
-            name: ait.gui.AITGUIPlugin
-            inputs:
-                - TLM
-#            outputs:
-#                - command_testbed_stream
+    server:
+        plugins:
+            - plugin:
+                name: ait.gui.AITGUIPlugin
+                inputs:
+                    - 2345
+#                outputs:
+#                    - command_testbed_stream
 
     inbound-streams:
 
